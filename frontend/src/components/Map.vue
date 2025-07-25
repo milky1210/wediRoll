@@ -82,7 +82,10 @@ function closeDialog() {
 .zoom-container {
   width: 4000px;
   height: 2000px;
-  background-color: #f9f9f9;
+  background-image: url('/background.png'); /* public/background.jpg に配置する */
+  background-size: cover;      /* もしくは contain, 100% 100% など */
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .grid {
