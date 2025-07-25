@@ -30,25 +30,14 @@
 import { ref, onMounted } from 'vue'
 import panzoom from '@panzoom/panzoom'
 
-// 蛇行するようにマスの座標を定義（例：横ジグザグ）
-const cells = ref(
-  Array.from({ length: 50 }, (_, i) => {
-    const row = Math.floor(i / 10)
-    const col = i % 10
-    const x = row % 2 === 0 ? col * 200 : (9 - col) * 200 // 偶数列:→, 奇数列:←
-    const y = row * 200
-    return { x, y }
-  })
-)
-
 const wrapperRef = ref(null)
 const panzoomRef = ref(null)
-const massList = ref([])       // マスの説明文リスト
-const selected = ref(null)     // 選択中のマス情報
+
+const cells = ref([])
+const selected = ref(null)
 const dialogOpen = ref(false)
 
 onMounted(async () => {
-  // ズーム・パンの初期化
   const panzoomInstance = panzoom(panzoomRef.value, {
     maxZoom: 5,
     minZoom: 0.5,
@@ -62,23 +51,35 @@ onMounted(async () => {
     }
   }, { passive: false })
 
-  // mass.txt 読み込み
-  const res = await fetch('/mass.txt')
+  // CSV読み込み
+  const res = await fetch('/mass.csv')
   const text = await res.text()
-  massList.value = text.split('\n').map((line, i) => line.trim() || `マス ${i + 1}`)
+  const lines = text.trim().split('\n')
+
+  // 先頭がヘッダーなら除外
+  const rows = lines.slice(1).map(line => {
+    const [number, x, y, description] = line.split(',')
+    return {
+      number: Number(number),
+      x: Number(x),
+      y: Number(y),
+      description: description || `マス ${number}`
+    }
+  })
+
+  cells.value = rows
 })
 
 function onClick(n) {
-  selected.value = {
-    number: n,
-    description: massList.value[n - 1] || `マス ${n}`
-  }
+  const cell = cells.value.find(c => c.number === n)
+  selected.value = cell || { number: n, description: `マス ${n}` }
   dialogOpen.value = true
 }
 function closeDialog() {
-  selected.value = null
   dialogOpen.value = false
+  selected.value = null
 }
+
 </script>
 
 <style scoped>
