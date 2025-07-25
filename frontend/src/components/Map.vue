@@ -5,9 +5,9 @@
         v-for="(cell, i) in cells"
         :key="i"
         class="cell"
-        color="primary"
+        :color="getColor(cell.type)"
         :style="{ top: cell.y + 'px', left: cell.x + 'px' }"
-        @click="onClick(i + 1)"
+        @click="onClick(cell)"
       >
         {{ i + 1 }}
       </v-btn>
@@ -58,20 +58,20 @@ onMounted(async () => {
 
   // 先頭がヘッダーなら除外
   const rows = lines.slice(1).map(line => {
-    const [number, x, y, description] = line.split(',')
+    const [number, x, y, description, type] = line.split(',')
     return {
       number: Number(number),
       x: Number(x),
       y: Number(y),
-      description: description || `マス ${number}`
+      description: description || `マス ${number}`,
+      type: type?. trim() || '通常マス'
     }
   })
 
   cells.value = rows
 })
 
-function onClick(n) {
-  const cell = cells.value.find(c => c.number === n)
+function onClick(cell) {
   selected.value = cell || { number: n, description: `マス ${n}` }
   dialogOpen.value = true
 }
@@ -79,7 +79,18 @@ function closeDialog() {
   dialogOpen.value = false
   selected.value = null
 }
-
+function getColor(type) {
+  switch (type) {
+    case 'クイズマス':
+      return 'blue'
+    case '挑戦マス':
+      return 'orange'
+    case 'STOPマス':
+      return 'red'
+    default:
+      return 'white'
+  }
+}
 </script>
 
 <style scoped>
