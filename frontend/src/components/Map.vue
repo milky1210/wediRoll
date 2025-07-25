@@ -1,57 +1,74 @@
 <template>
-  <div ref="wrapper" class="wrapper">
-    <div ref="zoomArea" class="zoom-area">
-      <v-btn
-        v-for="i in 150"
-        :key="i"
-        class="cell"
-        :style="{
-          top: `${Math.floor((i - 1) / 10) * 70}px`,
-          left: `${((i - 1) % 10) * 100}px`,
-        }"
-      >
-        {{ i }}
-      </v-btn>
+  <div ref="wrapperRef" class="map-wrapper">
+    <div ref="panzoomRef" class="zoom-container">
+      <div class="grid">
+        <v-btn
+          v-for="n in 50"
+          :key="n"
+          color="primary"
+          class="grid-cell"
+          @click="onClick(n)"
+        >
+          {{ n }}
+        </v-btn>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import Panzoom from '@panzoom/panzoom'
+import { onMounted, ref } from 'vue'
+import panzoom from '@panzoom/panzoom'
 
-const wrapper = ref(null)
-const zoomArea = ref(null)
+const wrapperRef = ref(null)
+const panzoomRef = ref(null)
 
 onMounted(() => {
-  const panzoom = Panzoom(zoomArea.value, {
-    maxScale: 4,
-    minScale: 0.2,
-    contain: 'outside',
+  const panzoomInstance = panzoom(panzoomRef.value, {
+    maxZoom: 5,
+    minZoom: 0.5,
+    smoothScroll: false,
   })
-  wrapper.value.addEventListener('wheel', panzoom.zoomWithWheel)
+
+  // ホイールズーム有効化
+  wrapperRef.value.addEventListener('wheel', (e) => {
+    if (e.ctrlKey) {
+      e.preventDefault()
+      panzoomInstance.zoomWithWheel(e)
+    }
+  }, { passive: false })
 })
+
+function onClick(n) {
+  alert(`マス ${n} をクリック！`)
+}
 </script>
 
 <style scoped>
-.wrapper {
-  width: 100vw;
+.map-wrapper {
+  width: 100%;
   height: 100vh;
   overflow: hidden;
-  position: relative;
+  border: 2px solid #ccc;
 }
 
-.zoom-area {
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-  transform-origin: 0 0;
-  background: #f0f0f0;
+.zoom-container {
+  width: 4000px;
+  height: 2000px;
+  background-color: #f9f9f9;
 }
 
-.cell {
-  position: absolute;
-  width: 10px;
-  height: 10px;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(10, 200px);
+  grid-template-rows: repeat(5, 200px);
+  gap: 16px;
+  padding: 16px;
+}
+
+.grid-cell {
+  width: 100%;
+  height: 100%;
+  font-size: 20px;
 }
 </style>
