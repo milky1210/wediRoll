@@ -1,17 +1,16 @@
 <template>
   <div ref="wrapperRef" class="map-wrapper">
     <div ref="panzoomRef" class="zoom-container">
-      <div class="grid">
-        <v-btn
-          v-for="n in 50"
-          :key="n"
-          color="primary"
-          class="grid-cell"
-          @click="onClick(n)"
-        >
-          {{ n }}
-        </v-btn>
-      </div>
+      <v-btn
+        v-for="(cell, i) in cells"
+        :key="i"
+        class="cell"
+        color="primary"
+        :style="{ top: cell.y + 'px', left: cell.x + 'px' }"
+        @click="onClick(i + 1)"
+      >
+        {{ i + 1 }}
+      </v-btn>
     </div>
   </div>
 
@@ -28,8 +27,19 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import panzoom from '@panzoom/panzoom'
+
+// 蛇行するようにマスの座標を定義（例：横ジグザグ）
+const cells = ref(
+  Array.from({ length: 50 }, (_, i) => {
+    const row = Math.floor(i / 10)
+    const col = i % 10
+    const x = row % 2 === 0 ? col * 200 : (9 - col) * 200 // 偶数列:→, 奇数列:←
+    const y = row * 200
+    return { x, y }
+  })
+)
 
 const wrapperRef = ref(null)
 const panzoomRef = ref(null)
@@ -80,25 +90,12 @@ function closeDialog() {
 }
 
 .zoom-container {
+  position: relative;
   width: 4000px;
   height: 2000px;
   background-image: url('/background.png'); /* public/background.jpg に配置する */
   background-size: cover;      /* もしくは contain, 100% 100% など */
   background-position: center;
   background-repeat: no-repeat;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(10, 200px);
-  grid-template-rows: repeat(5, 200px);
-  gap: 16px;
-  padding: 16px;
-}
-
-.grid-cell {
-  width: 100%;
-  height: 100%;
-  font-size: 20px;
 }
 </style>
