@@ -11,3 +11,5 @@ Windows->[Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-
 ```bash
 docker compose up -d --build
 ```
+### 開発サーバーアクセス方法
+ブラウザで `http://localhost:5173` にアクセス
