@@ -24,10 +24,18 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <!-- サイコロ表示用 -->
+<v-dialog v-model="diceOpen" persistent max-width="200px">
+  <v-card class="pa-4 text-center">
+    ダイスロール！
+    <v-img :src="`/dice_${currentDice}.jpg`" max-width="120" class="mx-auto" />
+  </v-card>
+</v-dialog>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import panzoom from '@panzoom/panzoom'
 
 const wrapperRef = ref(null)
@@ -36,6 +44,9 @@ const panzoomRef = ref(null)
 const cells = ref([])
 const selected = ref(null)
 const dialogOpen = ref(false)
+const diceOpen = ref(false)
+const currentDice = ref(1)
+let diceInterval = null
 
 onMounted(async () => {
   const panzoomInstance = panzoom(panzoomRef.value, {
@@ -56,6 +67,9 @@ onMounted(async () => {
   const text = await res.text()
   const lines = text.trim().split('\n')
 
+  //dice roll用
+  window.addEventListener('keydown', onKeyDown)
+
   // 先頭がヘッダーなら除外
   const rows = lines.slice(1).map(line => {
     const [number, x, y, description, type] = line.split(',')
@@ -69,6 +83,9 @@ onMounted(async () => {
   })
 
   cells.value = rows
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeyDown)
 })
 
 function onClick(cell) {
@@ -90,6 +107,29 @@ function getColor(type) {
     default:
       return 'white'
   }
+}
+function onKeyDown(event) {
+  if (event.key === 'd' || event.key === 'D') {
+    rollDice()
+  }
+}
+function rollDice() {
+  diceOpen.value = true
+  let count = 0
+
+  diceInterval = setInterval(() => {
+    currentDice.value = Math.floor(Math.random() * 6) + 1
+    count++
+    if (count >= 10) {
+      clearInterval(diceInterval)
+      diceInterval = null
+    }
+  }, 100)
+
+  // 自動で2秒後に閉じる
+  setTimeout(() => {
+    diceOpen.value = false
+  }, 2000)
 }
 </script>
 
