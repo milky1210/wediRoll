@@ -11,6 +11,13 @@
       >
         {{ i + 1 }}
       </v-btn>
+      <img
+        ref="komaRef"
+        src="/koma.png"
+        class="koma"
+        :style="{ top: komaPos.y + 'px', left: komaPos.x + 'px' }"
+        @pointerdown.stop.prevent="startDrag"
+      />
     </div>
   </div>
 
@@ -32,7 +39,7 @@
     <img :src="`/dice_${currentDice}.jpg`" style="max-width:120px; margin:auto;" />
   </v-card>
 </v-dialog>
-<div class="dice-history">
+<div v-if="showMemo" class="dice-history">
   <div>直近のサイコロ</div>
   <div>
     <span v-for="(d, i) in diceHistory" :key="i" class="dice-history-item">{{ d }}</span>
@@ -42,7 +49,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import panzoom from '@panzoom/panzoom'
+import * as Panzoom from '@panzoom/panzoom'
 
 const wrapperRef = ref(null)
 const panzoomRef = ref(null)
@@ -54,14 +61,21 @@ const diceOpen = ref(false)
 const diceHistory = ref([]) // サイコロの履歴
 const currentDice = ref(1)
 let diceInterval = null
+const showMemo = ref(false)
+let panzoomInstance = null
+const komaRef = ref(null)
+const komaPos = ref({ x: 0, y: 200 })
+let isDragging = false
+let dragOffset = { x: 0, y: 0 }
+
 
 onMounted(async () => {
-  const panzoomInstance = panzoom(panzoomRef.value, {
+  const instance = Panzoom.default(panzoomRef.value, {
     maxZoom: 5,
     minZoom: 0.5,
-    smoothScroll: false,
+    smoothScroll: false
   })
-
+  panzoomInstance = instance
   wrapperRef.value.addEventListener('wheel', (e) => {
     if (e.ctrlKey) {
       e.preventDefault()
@@ -119,6 +133,9 @@ function onKeyDown(event) {
   if ((event.key === 'd' || event.key === 'D') && !diceOpen.value) {
     rollDice()
   }
+  if (event.key === 'm' || event.key === 'M') {
+    showMemo.value = !showMemo.value
+  }
 }
 function rollDice() {
   diceOpen.value = true
@@ -139,6 +156,28 @@ function rollDice() {
   setTimeout(() => {
     diceOpen.value = false
   }, 3000)
+}
+
+function startDrag(e) {
+  isDragging = true
+  const scale = panzoomInstance.getScale() || 1
+  dragOffset.x = e.clientX / scale - komaPos.value.x
+  dragOffset.y = e.clientY / scale - komaPos.value.y
+  document.addEventListener('pointermove', onDrag)
+  document.addEventListener('pointerup', endDrag)
+}
+
+function onDrag(e) {
+  if (!isDragging) return
+  const scale = panzoomInstance.getScale() || 1
+  komaPos.value.x = e.clientX / scale - dragOffset.x
+  komaPos.value.y = e.clientY / scale - dragOffset.y
+}
+
+function endDrag() {
+  isDragging = false
+  document.removeEventListener('pointermove', onDrag)
+  document.removeEventListener('pointerup', endDrag)
 }
 </script>
 
@@ -176,5 +215,13 @@ function rollDice() {
   margin: 0 4px;
   font-weight: bold;
   font-size: 1.2em;
+}
+.koma {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  cursor: grab;
+  z-index: 10;
+  background-color: rgba(255, 0, 0, 0.3); /* 赤色半透明で表示確認 */
 }
 </style>
