@@ -29,9 +29,15 @@
 <v-dialog v-model="diceOpen" persistent max-width="200px">
   <v-card class="pa-4 text-center">
     ダイスロール！
-    <v-img :src="`/dice_${currentDice}.jpg`" max-width="120" class="mx-auto" />
+    <img :src="`/dice_${currentDice}.jpg`" style="max-width:120px; margin:auto;" />
   </v-card>
 </v-dialog>
+<div class="dice-history">
+  <div>直近のサイコロ</div>
+  <div>
+    <span v-for="(d, i) in diceHistory" :key="i" class="dice-history-item">{{ d }}</span>
+  </div>
+</div>
 </template>
 
 <script setup>
@@ -45,6 +51,7 @@ const cells = ref([])
 const selected = ref(null)
 const dialogOpen = ref(false)
 const diceOpen = ref(false)
+const diceHistory = ref([]) // サイコロの履歴
 const currentDice = ref(1)
 let diceInterval = null
 
@@ -109,7 +116,7 @@ function getColor(type) {
   }
 }
 function onKeyDown(event) {
-  if (event.key === 'd' || event.key === 'D') {
+  if ((event.key === 'd' || event.key === 'D') && !diceOpen.value) {
     rollDice()
   }
 }
@@ -123,13 +130,15 @@ function rollDice() {
     if (count >= 10) {
       clearInterval(diceInterval)
       diceInterval = null
+      // 履歴に追加（最大5件まで）
+      diceHistory.value.unshift(currentDice.value)
+      if (diceHistory.value.length > 5) diceHistory.value.pop()
     }
   }, 100)
 
-  // 自動で2秒後に閉じる
   setTimeout(() => {
     diceOpen.value = false
-  }, 2000)
+  }, 3000)
 }
 </script>
 
@@ -149,5 +158,23 @@ function rollDice() {
   background-size: cover;      /* もしくは contain, 100% 100% など */
   background-position: center;
   background-repeat: no-repeat;
+}
+
+.dice-history {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 8px 16px;
+  border-radius: 8px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.dice-history-item {
+  display: inline-block;
+  margin: 0 4px;
+  font-weight: bold;
+  font-size: 1.2em;
 }
 </style>
