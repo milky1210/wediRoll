@@ -1,6 +1,8 @@
 # Ingore raw Assets
 dice_*.jpg
-koma.png
+dice_*.png
+dice_*.webp
+koma*.png
 background.png
 
 # Logs

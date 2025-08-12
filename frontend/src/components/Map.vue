@@ -36,7 +36,7 @@
 <v-dialog v-model="diceOpen" persistent max-width="200px">
   <v-card class="pa-4 text-center">
     ダイスロール！
-    <img :src="`/dice_${currentDice}.jpg`" style="max-width:120px; margin:auto;" />
+    <img :src="`/dice_${currentDice}.png`" style="max-width:120px; margin:auto;" />
   </v-card>
 </v-dialog>
 <div v-if="showMemo" class="dice-history">
