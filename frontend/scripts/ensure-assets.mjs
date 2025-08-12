@@ -8,6 +8,7 @@ const PUBLIC_DIR = path.resolve(process.cwd(), 'public')
 const REQUIRED = [
   { base: 'background', exts: ['png', 'jpg', 'jpeg', 'webp'] },
   { base: 'koma',       exts: ['png', 'jpg', 'jpeg', 'webp'] },
+  { base: 'mass', exts: ['csv']},
   // dice_1〜6（jpg想定。pngなら拡張子を調整）
   ...Array.from({ length: 6 }, (_, i) => ({ base: `dice_${i+1}`, exts: ['jpg', 'png'] })),
 ]
