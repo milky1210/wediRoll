@@ -11,6 +11,7 @@ const REQUIRED = [
   { base: 'mass', exts: ['csv']},
   // dice_1〜6（jpg想定。pngなら拡張子を調整）
   ...Array.from({ length: 6 }, (_, i) => ({ base: `dice_${i+1}`, exts: ['jpg', 'png'] })),
+  ...Array.from({ length: 6 }, (_, i) => ({ base: `koma_${i+1}`, exts: ['jpg', 'png'] })),
 ]
 
 async function fileExists(p) {
