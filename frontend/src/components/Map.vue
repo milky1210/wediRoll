@@ -6,7 +6,7 @@
         v-for="(cell, i) in cells"
         :key="'cell-' + i"
         class="cell"
-        :color="getColor(cell.type)"
+        :color="cell.color"
         :style="{ top: cell.y + 'px', left: cell.x + 'px' }"
         @click="onClick(cell)"
       >
@@ -239,13 +239,13 @@ onMounted(async () => {
 
   // 先頭がヘッダーなら除外
   const rows = lines.slice(1).map(line => {
-    const [number, x, y, description, type] = line.split(',')
+    const [number, x, y, description, color] = line.split(',')
     return {
       number: Number(number),
       x: Number(x),
       y: Number(y),
       description: description || `マス ${number}`,
-      type: (type || '').trim() || '通常マス'
+      color: (color || '').trim() || 'white'
     }
   })
   cells.value = rows
@@ -263,18 +263,7 @@ function closeDialog() {
   dialogOpen.value = false
   selected.value = null
 }
-function getColor(type) {
-  switch (type) {
-    case 'クイズマス':
-      return 'blue'
-    case '挑戦マス':
-      return 'orange'
-    case 'STOPマス':
-      return 'red'
-    default:
-      return 'white'
-  }
-}
+
 function onKeyDown(event) {
   if ((event.key === 'd' || event.key === 'D') && !diceOpen.value) {
     rollDice()
