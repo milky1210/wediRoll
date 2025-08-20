@@ -51,6 +51,28 @@
     <div>
       <span v-for="(d, i) in diceHistory" :key="'hist-' + i" class="dice-history-item">{{ d }}</span>
     </div>
+
+    <div>各チームの点数状況</div>
+    <div v-for="team in teams" :key="'team-' + team.id">
+      {{ team.name }}: 
+  <input
+    type="text"
+    v-model="team.score"
+    class="score-input"
+    style="width: 80px; margin-left: 8px;"
+    @change="team.score = evalScore(team.score)"
+    @blur="team.score = evalScore(team.score)"
+  />
+    </div>
+    全体:
+  <input
+    type="text"
+    v-model="globalScoreInput"
+    class="score-input"
+    style="width: 80px; margin-left: 8px;"
+    @change="applyGlobalScore()"
+    @blur="applyGlobalScore()"
+  />
   </div>
 </template>
 
@@ -74,13 +96,39 @@ const showMemo = ref(false)
 
 /** ▼▼ コマ：5体対応 ▼▼ */
 const komas = ref([
-  { id: 1, src: '/koma_1.png', pos: { x: 0,   y: 200 } },
-  { id: 2, src: '/koma_2.png', pos: { x: 60,  y: 200 } },
-  { id: 3, src: '/koma_3.png', pos: { x: 120, y: 200 } },
-  { id: 4, src: '/koma_4.png', pos: { x: 180, y: 200 } },
-  { id: 5, src: '/koma_5.png', pos: { x: 240, y: 200 } },
+  { id: 1, src: '/koma_1.png', pos: { x: 300,   y: 120 } },
+  { id: 2, src: '/koma_2.png', pos: { x: 600,  y: 120 } },
+  { id: 3, src: '/koma_3.png', pos: { x: 900, y: 120 } },
+  { id: 4, src: '/koma_4.png', pos: { x: 1200, y: 120 } },
+  { id: 5, src: '/koma_5.png', pos: { x: 1500, y: 120 } },
 ])
 // もしコマ画像を変えたい場合：/koma1.png, /koma2.png ... を public に置いて src を個別に設定してください
+
+// チーム情報（初期値）
+const teams = ref([
+  { id: 1, name: 'チーム1', score: 0, input: '0' },
+  { id: 2, name: 'チーム2', score: 0, input: '0' },
+  { id: 3, name: 'チーム3', score: 0, input: '0' },
+  { id: 4, name: 'チーム4', score: 0, input: '0' },
+  { id: 5, name: 'チーム5', score: 0, input: '0' }
+])
+const globalScoreInput = ref('')
+
+// 保存用キー
+const LS_KEY = 'wediroll_scores'
+
+// ページ読み込み時に復元
+onMounted(() => {
+  const saved = localStorage.getItem(LS_KEY)
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed)) {
+        teams.value = parsed
+      }
+    } catch {}
+  }
+})
 
 // 個別のDOM参照（必要なら）
 const komaElMap = new Map()
@@ -131,6 +179,39 @@ function endDrag() {
   document.removeEventListener('pointerup', endDrag)
 }
 /** ▲▲ コマ：5体対応 ▲▲ */
+
+function evalScore(str) {
+  try {
+    // 数式として評価（安全のため数字と演算子のみ許可）
+    if (/^[\d+\-*/ ().]+$/.test(str)) {
+      // eslint-disable-next-line no-eval
+      return Math.ceil(eval(str))
+    }
+    return 0
+  } catch {
+    return 0
+  }
+}
+
+function applyGlobalScore() {
+  const exprRaw = globalScoreInput.value
+  teams.value.forEach(team => {
+    let expr = exprRaw
+    try {
+      // 先頭が演算子なら team.score + expr などにする
+      if (/^[+\-*/]/.test(expr)) {
+        expr = `${team.score}${expr}`
+      }
+      if (/^[\d+\-*/ ().]+$/.test(expr)) {
+        // eslint-disable-next-line no-eval
+        team.score = Math.ceil(eval(expr))
+      }
+    } catch {
+      // エラー時は何もしない
+    }
+  })
+  globalScoreInput.value = ''
+}
 
 onMounted(async () => {
   const instance = Panzoom.default(panzoomRef.value, {
@@ -229,11 +310,21 @@ function rollDice() {
   overflow: hidden;
   border: 2px solid #ccc;
 }
-
+/* 例: ボタンのサイズを80x80pxにする */
+.cell {
+  min-width: 100px !important;
+  width: 500px !important;
+  height: 200px !important;
+  font-size: 10em;
+  border-radius: 10%;
+  z-index: 5;
+  padding: 0 !important;
+  line-height: 100px !important;
+}
 .zoom-container {
   position: relative;
-  width: 4000px;
-  height: 2000px;
+  width: 8000px;
+  height: 3000px;
   background-image: url('/background.png');
   background-size: cover;
   background-position: center;
@@ -243,8 +334,8 @@ function rollDice() {
 /* コマ */
 .koma {
   position: absolute;
-  width: 64px;
-  height: 64px;
+  width: 280px;
+  height: 280px;
   cursor: grab;
   z-index: 10;
   user-select: none;
