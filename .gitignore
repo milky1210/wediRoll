@@ -1,0 +1,8 @@
+# Ingore raw Assets
+dice_*.jpg
+dice_*.png
+dice_*.webp
+koma*.png
+background.png
+mass.csv
+mass_images/
