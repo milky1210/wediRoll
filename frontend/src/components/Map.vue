@@ -10,7 +10,7 @@
         :style="{ top: cell.y + 'px', left: cell.x + 'px' }"
         @click="onClick(cell)"
       >
-        {{ i + 1 }}
+        {{ cell.title }}
       </v-btn>
 
       <!-- コマ（5体まで） -->
@@ -29,8 +29,9 @@
 
   <v-dialog v-model="dialogOpen" max-width="500px">
     <v-card v-if="selected">
-      <v-card-title>マス {{ selected.number }}</v-card-title>
-      <v-card-text>{{ selected.description }}</v-card-text>
+      <v-card-title>{{ selected.title }}</v-card-title>
+      <v-card-text v-html="selected.description" />
+      <v-card-text v-html="selected.effect" />
       <v-card-actions>
         <v-spacer />
         <v-btn text @click="closeDialog">閉じる</v-btn>
@@ -239,12 +240,14 @@ onMounted(async () => {
 
   // 先頭がヘッダーなら除外
   const rows = lines.slice(1).map(line => {
-    const [number, x, y, description, color] = line.split(',')
+    const [number, title, x, y, description,effect, color] = line.split(',')
     return {
       number: Number(number),
+      title: title || `マス ${number}`,
       x: Number(x),
       y: Number(y),
       description: description || `マス ${number}`,
+      effect: effect || '',
       color: (color || '').trim() || 'white'
     }
   })
@@ -301,19 +304,18 @@ function rollDice() {
 }
 /* 例: ボタンのサイズを80x80pxにする */
 .cell {
-  min-width: 100px !important;
+  position: absolute;
   width: 500px !important;
   height: 200px !important;
-  font-size: 10em;
+  font-size: 3em;
   border-radius: 10%;
   z-index: 5;
-  padding: 0 !important;
-  line-height: 100px !important;
+  transform: translate(-50%, -50%);
 }
 .zoom-container {
   position: relative;
   width: 8000px;
-  height: 3000px;
+  height: 3500px;
   background-image: url('/background.png');
   background-size: cover;
   background-position: center;
