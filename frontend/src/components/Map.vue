@@ -23,6 +23,7 @@
         :class="{ dragging: draggingId === k.id }"
         :style="{ top: k.pos.y + 'px', left: k.pos.x + 'px' }"
         @pointerdown.stop.prevent="startDrag($event, k.id)"
+        @contextmenu="toggleKomaImage(k.id, $event)"
       />
     </div>
   </div>
@@ -118,11 +119,11 @@ const komas = ref([
 
 // チーム情報（初期値）
 const teams = ref([
-  { id: 1, name: 'チーム1', score: 0, input: '0' },
-  { id: 2, name: 'チーム2', score: 0, input: '0' },
-  { id: 3, name: 'チーム3', score: 0, input: '0' },
-  { id: 4, name: 'チーム4', score: 0, input: '0' },
-  { id: 5, name: 'チーム5', score: 0, input: '0' }
+  { id: 1, name: 'チーム赤', score: 0, input: '0' },
+  { id: 2, name: 'チーム緑', score: 0, input: '0' },
+  { id: 3, name: 'チーム青', score: 0, input: '0' },
+  { id: 4, name: 'チーム紫', score: 0, input: '0' },
+  { id: 5, name: 'チーム黄', score: 0, input: '0' }
 ])
 const globalScoreInput = ref('')
 
@@ -165,6 +166,17 @@ function clientToContent(e) {
   return { x, y, scale }
 }
 
+function toggleKomaImage(id, event) {
+  event.preventDefault()
+  const k = komas.value.find(k => k.id === id)
+  if (!k) return
+  if (k.src.endsWith('_z.png')) {
+    k.src = `/koma_${id}.png`
+  } else {
+    k.src = `/koma_${id}_z.png`
+  }
+}
+
 function startDrag(e, id) {
   draggingId.value = id
   const k = komas.value.find(k => k.id === id)
@@ -193,6 +205,7 @@ function endDrag() {
 /** ▲▲ コマ：5体対応 ▲▲ */
 
 function evalScore(str) {
+  str = str.replace(/[^0-9+\-*/().]/g, '') // 数字と演算子以外を除去
   try {
     // 数式として評価（安全のため数字と演算子のみ許可）
     if (/^[\d+\-*/ ().]+$/.test(str)) {
