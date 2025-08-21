@@ -27,17 +27,28 @@
     </div>
   </div>
 
-  <v-dialog v-model="dialogOpen" max-width="500px">
-    <v-card v-if="selected">
-      <v-card-title>{{ selected.title }}</v-card-title>
-      <v-card-text v-html="selected.description" />
-      <v-card-text v-html="selected.effect" />
-      <v-card-actions>
-        <v-spacer />
-        <v-btn text @click="closeDialog">閉じる</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+<v-dialog v-model="dialogOpen" max-width="80vw" min-height="80vh" persistent>
+  <v-card
+    v-if="selected"
+    class="dialog-card"
+    :style="{
+      backgroundImage: `url('/mass_images/${selected.number}.jpg')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    }"
+  >
+    <div class="dialog-bg-overlay"></div>
+    <v-card-title>{{ selected.title }}</v-card-title>
+    <v-card-text v-html="selected.description" />
+    <v-card-text v-html="selected.effect" />
+    {{  }}
+    <v-card-actions>
+      <v-spacer />
+      <v-btn text @click="closeDialog">閉じる</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
 
   <!-- サイコロ表示用 -->
   <v-dialog v-model="diceOpen" persistent max-width="200px">
@@ -334,6 +345,22 @@ function rollDice() {
 }
 .koma.dragging {
   z-index: 20;
+}
+
+.dialog-card {
+  position: relative;
+  overflow: hidden;
+}
+.dialog-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.7); /* 白で70%透過。色や透明度は調整可 */
+  z-index: 1;
+  pointer-events: none;
+}
+.dialog-card > *:not(.dialog-bg-overlay) {
+  position: relative;
+  z-index: 2;
 }
 
 
