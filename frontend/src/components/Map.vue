@@ -28,7 +28,35 @@
     </div>
   </div>
 
-<v-dialog v-model="dialogOpen" max-width="80vw" min-height="80vh" persistent>
+<v-dialog v-model="dialogOpen1" max-width="80vw" max-height="80vh" persistent>
+  <v-card v-if="selected" class="dialog-card" style="display: flex; flex-direction: column; align-items: stretch;">
+    <!-- 文字セクション -->
+    <div class="dialog-text-section" style="padding: 32px;">
+      <v-card-title>{{ selected.title }}</v-card-title>
+      <v-card-text v-html="selected.description" />
+      <v-card-text v-html="selected.effect" />
+      <v-card-actions>
+        <v-spacer />
+        <v-btn text @click="closeDialog">閉じる</v-btn>
+      </v-card-actions>
+    </div>
+    <!-- 画像セクション -->
+  <div
+    v-if="showImage"
+    class="dialog-image-section"
+    style="width: 100%; text-align: center; padding: 16px;"
+  >
+    <img
+      :src="`/mass_images/${selected.number}.jpg`"
+      alt="背景画像"
+      style="max-width: 100%; max-height: 400px; object-fit: contain; border-radius: 16px;"
+      @error="handleError"
+    />
+  </div>
+  </v-card>
+</v-dialog>
+
+<v-dialog v-model="dialogOpen2" max-width="80vw" min-height="80vh" persistent>
   <v-card
     v-if="selected"
     class="dialog-card"
@@ -99,13 +127,14 @@ let panzoomInstance = null
 
 const cells = ref([])
 const selected = ref(null)
-const dialogOpen = ref(false)
+const dialogOpen1 = ref(false)
 
 const diceOpen = ref(false)
 const diceHistory = ref([])
 const currentDice = ref(1)
 let diceInterval = null
 const showMemo = ref(false)
+const showImage = ref(true)
 
 /** ▼▼ コマ：5体対応 ▼▼ */
 const komas = ref([
@@ -164,6 +193,11 @@ function clientToContent(e) {
   const x = (clientX - rect.left - pan.x) / scale
   const y = (clientY - rect.top  - pan.y) / scale
   return { x, y, scale }
+}
+
+
+function handleError() {
+  showImage.value = false; // エラー時は非表示
 }
 
 function toggleKomaImage(id, event) {
@@ -284,11 +318,12 @@ onBeforeUnmount(() => {
 
 function onClick(cell) {
   selected.value = cell || { number: '-', description: `マス` }
-  dialogOpen.value = true
+  dialogOpen1.value = true
 }
 function closeDialog() {
-  dialogOpen.value = false
+  dialogOpen1.value = false
   selected.value = null
+  showImage.value = true
 }
 
 function onKeyDown(event) {
